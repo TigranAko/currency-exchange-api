@@ -2,11 +2,13 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.api.endpoints.users import router as user_router
+from app.api.endpoints.currency import router as currency_router
 from app.core.security import security
 
 app = FastAPI()
 
 app.include_router(user_router)
+app.include_router(currency_router)
 security.handle_errors(app)
 
 
