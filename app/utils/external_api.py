@@ -24,3 +24,15 @@ def get_currency_exchenge(currency: SCurrency) -> dict[str, Any]:
             "json": response.json(),
             "response": response
     }
+
+def get_currency_list() -> dict[str, Any]:
+    url = "https://api.apilayer.com/currency_data/list"
+
+    response = requests.request("GET", url, headers=headers, data = payload)
+
+    status_code = response.status_code
+    return {
+            "status_code": status_code,
+            "json": response.json(),
+            "response": response
+    }
