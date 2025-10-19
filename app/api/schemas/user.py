@@ -11,3 +11,9 @@ class UserCreds(UserBase):
 
 class UserInDB(UserBase):
     hashed_password: str
+
+
+class UserResponse(BaseModel):
+    ok: bool = False
+    message: str | None = None
+    data: dict | None = None

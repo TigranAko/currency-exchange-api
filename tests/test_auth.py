@@ -11,7 +11,13 @@ def test_register():
     response = client.post("/auth/register", json={"username": "user", "password": "pass"})
     assert response.status_code == 200
     data = response.json()
-    assert data == "Вы зарегестрированы"
+    assert data == {
+            "ok": True,
+            "message": "Вы зарегестрированы",
+            "data": {
+                "username": "user"
+                }
+            }
 
 
 def test_login():
@@ -60,7 +66,13 @@ def test_register_and_login():
     response = client.post("/auth/register", json=user)
     assert response.status_code == 200
     data = response.json()
-    assert data == "Вы зарегестрированы"
+    assert data == {
+            "ok": True,
+            "message": "Вы зарегестрированы",
+            "data": {
+                "username": "user"
+                }
+            }
 
     response = client.post("/auth/login", json=user)
     assert response.status_code == 200
