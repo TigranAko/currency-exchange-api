@@ -17,7 +17,7 @@ print(fake_db)
 
 
 @router.post("/register", response_model=UserResponse)
-def register(creds: UserCreds, response: Response):
+def register(creds: UserCreds = Depends()):
 
     # Нужно добавить проверку на существование в БД
     password_hash = create_password_hash(creds.password)
@@ -34,7 +34,7 @@ def register(creds: UserCreds, response: Response):
 
 
 @router.post("/login")
-def login(creds: UserCreds, response: Response):
+def login(response: Response, creds: UserCreds = Depends()):
     if not creds.username in fake_db or not verify_password_hash(creds.password, fake_db[creds.username]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     access_token = create_jwt_acces_token(creds.username)
