@@ -24,8 +24,8 @@ def get_currency_list_handler(response: Response):
     return result["json"]
 
 
-@router.get("/update_list_json")
-def update_currency_file_handler(response: Response, dependencies=[Depends(security.access_token_required)]):
+@router.get("/update_list_json", dependencies=[Depends(security.access_token_required)])
+def update_currency_file_handler(response: Response):
     result = update_currency_json()
     response.status_code = result["status_code"]
     print(result)
