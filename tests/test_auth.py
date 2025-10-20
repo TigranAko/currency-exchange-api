@@ -8,7 +8,7 @@ client = TestClient(app)
 
 
 def test_register():
-    response = client.post("/auth/register", json={"username": "user", "password": "pass"})
+    response = client.post("/auth/register", params={"username": "user", "password": "pass"})
     assert response.status_code == 200
     data = response.json()
     assert data == {
@@ -22,7 +22,7 @@ def test_register():
 
 def test_login():
     login_data = {"username": "test", "password": "password"}
-    response = client.post("/auth/login", json=login_data)
+    response = client.post("/auth/login", params=login_data)
     assert response.status_code == 200
     cookies = response.cookies
     assert "access_token_cookie" in cookies
@@ -38,7 +38,7 @@ def test_login():
         ]
 )
 def test_register_errors(creds):
-    response = client.post("/auth/register", json=creds)
+    response = client.post("/auth/register", params=creds)
     assert response.status_code == 422
 
 
@@ -54,7 +54,7 @@ def test_register_errors(creds):
         ]
 )
 def test_login_errors(creds, status_code):
-    response = client.post("/auth/login", json=creds)
+    response = client.post("/auth/login", params=creds)
     assert response.status_code == status_code
     cookies = response.cookies
     assert "access_token_cookie" not in cookies
@@ -63,7 +63,7 @@ def test_login_errors(creds, status_code):
 
 def test_register_and_login():
     user = {"username": "user", "password": "pass"}
-    response = client.post("/auth/register", json=user)
+    response = client.post("/auth/register", params=user)
     assert response.status_code == 200
     data = response.json()
     assert data == {
@@ -74,7 +74,7 @@ def test_register_and_login():
                 }
             }
 
-    response = client.post("/auth/login", json=user)
+    response = client.post("/auth/login", params=user)
     assert response.status_code == 200
     cookies = response.cookies
     assert "access_token_cookie" in cookies
