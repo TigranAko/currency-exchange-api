@@ -11,10 +11,10 @@ class SCurrency(BaseModel):
     @field_validator("currency_from", "currency_to")
     @classmethod
     def validate_currency(cls, v):
-        from app.utils.external_api import get_currency_list
+        from app.utils.external_api import get_currencies_from_json
         # когда импорт вверху происходит циклический импорт
 
-        currencies = get_currency_list()["json"]["currencies"].keys()
+        currencies = get_currencies_from_json().keys()
         if v.upper() not in currencies:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Выбранный код валюты не найден.")
         return v
