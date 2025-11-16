@@ -4,10 +4,10 @@ from main import app
 import pytest
 
 
-client = TestClient(app)
+# client = TestClient(app)
 
 
-def test_register():
+def test_register(client):
     response = client.post("/auth/register", params={"username": "user", "password": "pass"})
     assert response.status_code == 200
     data = response.json()
@@ -20,7 +20,7 @@ def test_register():
             }
 
 
-def test_login():
+def test_login(client):
     login_data = {"username": "test", "password": "password"}
     response = client.post("/auth/login", params=login_data)
     assert response.status_code == 200
@@ -37,7 +37,7 @@ def test_login():
             {"password": "pass"}
         ]
 )
-def test_register_errors(creds):
+def test_register_errors(client, creds):
     response = client.post("/auth/register", params=creds)
     assert response.status_code == 422
 
@@ -53,7 +53,7 @@ def test_register_errors(creds):
             [{"username": "no_username", "password": "no_password"}, 401]
         ]
 )
-def test_login_errors(creds, status_code):
+def test_login_errors(client, creds, status_code):
     response = client.post("/auth/login", params=creds)
     assert response.status_code == status_code
     cookies = response.cookies
@@ -61,7 +61,7 @@ def test_login_errors(creds, status_code):
     assert "csrf_access_token" not in cookies
 
 
-def test_register_and_login():
+def test_register_and_login(client):
     user = {"username": "user", "password": "pass"}
     response = client.post("/auth/register", params=user)
     assert response.status_code == 200
