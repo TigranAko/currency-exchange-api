@@ -51,23 +51,23 @@ def get_currency_exchenge(currency: SCurrency) -> dict[str, Any]:
 
 
 
-def get_currency_list() -> dict[str, Any]:
+def get_currency_list(file_name = "currency_list.json") -> dict[str, Any]:
     url = "https://api.apilayer.com/currency_data/list"
     response_data = make_request(url)
 
     curencies = response_data["json"]["currencies"]
-    update_currencies_json(curencies)
+    update_currencies_json(curencies, file_name=file_name)
 
     return response_data
 
 
-def update_currencies_json(response_json) -> None:
-    with open("currency_list.json", 'w', encoding="utf-8") as file:
+def update_currencies_json(response_json, file_name = "currency_list.json") -> None:
+    with open(file_name, 'w', encoding="utf-8") as file:
         json.dump(response_json, file, ensure_ascii=False, indent=4)
 
 
 
-def get_currencies_from_json() -> dict[str, str]:
-    with open("currency_list.json", 'r', encoding="utf-8") as file:
+def get_currencies_from_json(file_name = "currency_list.json") -> dict[str, str]:
+    with open(file_name, 'r', encoding="utf-8") as file:
         curencies = json.load(file) # maybe error
     return curencies
