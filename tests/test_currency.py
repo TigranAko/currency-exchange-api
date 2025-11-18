@@ -82,3 +82,8 @@ def test_get_currency_exchange(mocker):
     assert response["status_code"] == 200
     assert response["json"]["result"] == 5.1961
     mock_get.asserr_called_once()
+
+
+def test_get_currencies_from_json():
+    currencies = eapi.get_currencies_from_json()
+    assert len(currencies) == 172
