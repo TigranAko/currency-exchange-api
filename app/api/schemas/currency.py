@@ -1,6 +1,5 @@
-from pydantic import BaseModel, field_validator, Field
-
 from fastapi import HTTPException, status
+from pydantic import BaseModel, Field, field_validator
 
 
 class SCurrency(BaseModel):
@@ -16,6 +15,8 @@ class SCurrency(BaseModel):
 
         currencies = get_currencies_from_json().keys()
         if v.upper() not in currencies:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Выбранный код валюты не найден.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Выбранный код валюты не найден.",
+            )
         return v
-

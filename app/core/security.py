@@ -1,14 +1,12 @@
 from authx import AuthX, AuthXConfig, TokenPayload
-from uuid import UUID
-from fastapi import Response, Depends
-from fastapi.security import OAuth2PasswordBearer
-from .config import ConfigAuth
-
+from fastapi import Depends, Response
 from passlib.context import CryptContext
 
+from .config import ConfigAuth
+
 pwd_context = CryptContext(
-        schemes=["bcrypt"] # нужно изменить bcrypt на argon2 (или обновить bcrypt)
-        )
+    schemes=["bcrypt"]  # нужно изменить bcrypt на argon2 (или обновить bcrypt)
+)
 
 
 def create_password_hash(password: str) -> str:
@@ -32,7 +30,7 @@ config.JWT_TOKEN_LOCATION = ["cookies"]
 
 security = AuthX(config=config)
 
-#security = OAuth2PasswordBearer(tokenUrl="/auth/login", )
+# security = OAuth2PasswordBearer(tokenUrl="/auth/login", )
 
 
 def create_cookie_auth(token, response: Response):
@@ -48,5 +46,6 @@ def create_jwt_acces_token(username: str):
 
 def get_username(payload: TokenPayload = Depends(security.access_token_required)):
     return payload.sub
+
 
 # Нужно добавить refresh tokens
