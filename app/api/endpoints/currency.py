@@ -19,7 +19,7 @@ router = APIRouter(prefix="/currency", tags=["Currency exchange"])
 async def get_currency_exchange_handler(
     response: Response, currency: SCurrency = Depends()
 ):
-    result = get_currency_exchenge(currency)
+    result = await get_currency_exchenge(currency)
     response.status_code = result["status_code"]
     print(result)
     return result["json"]
@@ -31,7 +31,7 @@ async def get_currency_exchange_handler(
     dependencies=[Depends(security.access_token_required)],
 )
 async def get_currency_list_handler(response: Response):
-    result = get_currency_list()
+    result = await get_currency_list()
     response.status_code = result["status_code"]
     print(result)
     return result["json"]

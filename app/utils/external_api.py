@@ -12,16 +12,17 @@ config = ConfigCurrencyExchange()
 headers = {"apikey": config.CURRENCY_EXCHANGE_API_KEY.get_secret_value()}
 
 
-def make_request(
+async def make_request(
     url: str, timeout: float = 60, headers: dict = headers
 ) -> dict[str, int | dict]:
     try:
-        response = httpx.get(url, timeout=timeout, headers=headers)
-        # Нужно заменить raise_for_status
-        # на свою обработку ошибок
-        # для более точной информации об ошибках
-        response.raise_for_status()  # Проверяет HTTP ошибки (4xx, 5xx)
-        return {"status_code": response.status_code, "json": response.json()}
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=timeout, headers=headers)
+            # Нужно заменить raise_for_status
+            # на свою обработку ошибок
+            # для более точной информации об ошибках
+            response.raise_for_status()  # Проверяет HTTP ошибки (4xx, 5xx)
+            return {"status_code": response.status_code, "json": response.json()}
 
     except httpx.HTTPError as e:
         # Ошибки HTTP (4xx, 5xx) - уже обработаны raise_for_status()
@@ -32,15 +33,15 @@ def make_request(
         raise HTTPException(status_code=500, detail="Некорректный JSON в ответе от API")
 
 
-def get_currency_exchenge(currency: SCurrency) -> dict[str, Any]:
+async def get_currency_exchenge(currency: SCurrency) -> dict[str, Any]:
     url = f"https://api.apilayer.com/currency_data/convert?to={currency.currency_to}&from={currency.currency_from}&amount={currency.amount}"
     # redis cash
-    return make_request(url)
+    return await make_request(url)
 
 
-def get_currency_list(file_name="currency_list.json") -> dict[str, Any]:
+async def get_currency_list(file_name="currency_list.json") -> dict[str, Any]:
     url = "https://api.apilayer.com/currency_data/list"
-    response_data = make_request(url)
+    response_data = await make_request(url)
 
     curencies = response_data["json"]["currencies"]
     update_currencies_json(curencies, file_name=file_name)

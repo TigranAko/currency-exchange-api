@@ -19,9 +19,10 @@ from app.utils import external_api as eapi
         ({"status_code": 422, "detail": "Некорректный JSON в ответе от API"}),
     ),
 )
-def test_make_requests(mocker, res_json):
+@pytest.mark.asyncio
+async def test_make_requests(mocker, res_json):
     status_code = res_json["status_code"]
-    mock_get = mocker.patch("httpx.get")
+    mock_get = mocker.patch("httpx.AsyncClient.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = status_code
 
@@ -34,7 +35,7 @@ def test_make_requests(mocker, res_json):
     if "detail" in res_json.keys():  # Если есть ошибка
         # Проверить что вызываются нужные ошибки
         with pytest.raises(HTTPException) as exc:
-            response = eapi.make_request(url, headers={})
+            response = await eapi.make_request(url, headers={})
         response = {
             "status_code": exc.value.status_code,
             "json": {"detail": exc.value.detail},
@@ -48,7 +49,7 @@ def test_make_requests(mocker, res_json):
         # value
 
     else:  # Если ошибок нет
-        response = eapi.make_request(url, headers={})
+        response = await eapi.make_request(url, headers={})
         assert response["json"]["json"] == res_json["json"]
 
         assert len(response["json"]) == 2
@@ -58,7 +59,8 @@ def test_make_requests(mocker, res_json):
     # mock_get.return_value.raise_for_status.assert_called_once()
 
 
-def test_get_currency_exchange(mocker):
+@pytest.mark.asyncio
+async def test_get_currency_exchange(mocker):
     res_json = {
         "date": "2005-01-01",
         "historical": True,
@@ -67,12 +69,12 @@ def test_get_currency_exchange(mocker):
         "result": 5.1961,
         "success": True,
     }
-    mock_get = mocker.patch("httpx.get")
+    mock_get = mocker.patch("httpx.AsyncClient.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = 200
     currency = SCurrency(**{"currency_to": "GBP", "currency_from": "Usd", "amount": 10})
 
-    response = eapi.get_currency_exchenge(currency)
+    response = await eapi.get_currency_exchenge(currency)
     assert response["status_code"] == 200
     assert response["json"]["result"] == 5.1961
     mock_get.assert_called_once()
@@ -83,17 +85,18 @@ def test_get_currencies_from_json():
     assert len(currencies) == 172
 
 
-def test_currency_json(mocker):
+@pytest.mark.asyncio
+async def test_currency_json(mocker):
     file_name = "test.json"
     file_path = Path(file_name)
     res_json = {
         "currencies": {"AED": "United Arab Emirates Dirham", "AFN": "Afghan Afghani"}
     }
-    mock_get = mocker.patch("httpx.get")
+    mock_get = mocker.patch("httpx.AsyncClient.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = 200
 
-    eapi.get_currency_list(
+    await eapi.get_currency_list(
         file_name=file_name
     )  # тут отправляется запрос и сохраняется в файле
     mock_get.assert_called_once()
