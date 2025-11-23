@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-import requests
+import httpx
 from fastapi import HTTPException
 
 from app.api.schemas.currency import SCurrency
@@ -16,21 +16,18 @@ def make_request(
     url: str, timeout: float = 60, headers: dict = headers
 ) -> dict[str, int | dict]:
     try:
-        response = requests.get(url, timeout=timeout, headers=headers)
+        response = httpx.get(url, timeout=timeout, headers=headers)
         # Нужно заменить raise_for_status
         # на свою обработку ошибок
         # для более точной информации об ошибках
         response.raise_for_status()  # Проверяет HTTP ошибки (4xx, 5xx)
         return {"status_code": response.status_code, "json": response.json()}
 
-    except requests.exceptions.HTTPError as e:
+    except httpx.HTTPError as e:
         # Ошибки HTTP (4xx, 5xx) - уже обработаны raise_for_status()
         raise HTTPException(
             status_code=422, detail=f"Ошибка внешнего API: {e.response.status_code}"
         )
-    except requests.exceptions.RequestException as e:
-        # Все остальные ошибки (таймауты, сетевые проблемы и т.д.)
-        raise HTTPException(status_code=500, detail=f"Ошибка соединения: {str(e)}")
     except ValueError:  # Если response.json() не сработает
         raise HTTPException(status_code=500, detail="Некорректный JSON в ответе от API")
 

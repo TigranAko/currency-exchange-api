@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from fastapi import HTTPException
-from requests import Response
+from httpx import Response
 
 from app.api.schemas.currency import SCurrency
 from app.utils import external_api as eapi
@@ -21,12 +21,12 @@ from app.utils import external_api as eapi
 )
 def test_make_requests(mocker, res_json):
     status_code = res_json["status_code"]
-    mock_get = mocker.patch("requests.get")
+    mock_get = mocker.patch("httpx.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = status_code
 
-    real_response = Response()
-    real_response.status_code = status_code
+    # костыль для использования встроенного raise_for_status
+    real_response = Response(status_code, request=mock_get)
     mock_get.return_value.raise_for_status = real_response.raise_for_status
 
     url = "https://example.com"
@@ -67,7 +67,7 @@ def test_get_currency_exchange(mocker):
         "result": 5.1961,
         "success": True,
     }
-    mock_get = mocker.patch("requests.get")
+    mock_get = mocker.patch("httpx.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = 200
     currency = SCurrency(**{"currency_to": "GBP", "currency_from": "Usd", "amount": 10})
@@ -89,7 +89,7 @@ def test_currency_json(mocker):
     res_json = {
         "currencies": {"AED": "United Arab Emirates Dirham", "AFN": "Afghan Afghani"}
     }
-    mock_get = mocker.patch("requests.get")
+    mock_get = mocker.patch("httpx.get")
     mock_get.return_value.json = lambda: res_json
     mock_get.return_value.status_code = 200
 
