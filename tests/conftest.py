@@ -1,6 +1,9 @@
+import httpx
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 
+from app.services.external_api_service import ExternalAPIService
 from main import app
 
 
@@ -25,3 +28,17 @@ def protected(client):
     cookies = response.cookies
     assert "access_token_cookie" in cookies
     assert "csrf_access_token" in cookies
+
+
+@pytest_asyncio.fixture
+async def mock_httpx_client():
+    """Фикстура для мок-клиента"""
+    async with httpx.AsyncClient() as client:
+        yield client
+
+
+@pytest.fixture
+def api_service(mock_httpx_client):
+    """Фикстура для сервиса"""
+    headers = {"apikey": "secret_api_key"}
+    return ExternalAPIService(mock_httpx_client, headers=headers)

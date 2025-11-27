@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Response
 
 from app.api.schemas.currency import SCurrency
 from app.core.security import security
-from app.utils.external_api import (
+from app.services.external_api_service import (
+    ExternalAPIService,
     get_currencies_from_json,
-    get_currency_exchenge,
-    get_currency_list,
+    get_external_api_service,
 )
 
 router = APIRouter(prefix="/currency", tags=["Currency exchange"])
@@ -17,12 +17,12 @@ router = APIRouter(prefix="/currency", tags=["Currency exchange"])
     dependencies=[Depends(security.access_token_required)],
 )
 async def get_currency_exchange_handler(
-    response: Response, currency: SCurrency = Depends()
+    response: Response,
+    currency: SCurrency = Depends(),
+    eapi_service: ExternalAPIService = Depends(get_external_api_service),
 ):
-    result = await get_currency_exchenge(currency)
-    response.status_code = result["status_code"]
-    print(result)
-    return result["json"]
+    result = await eapi_service.get_currency_exchenge(currency)
+    return result
 
 
 @router.get(
@@ -30,11 +30,12 @@ async def get_currency_exchange_handler(
     description="Get currencies and update currency_list.json",
     dependencies=[Depends(security.access_token_required)],
 )
-async def get_currency_list_handler(response: Response):
-    result = await get_currency_list()
-    response.status_code = result["status_code"]
-    print(result)
-    return result["json"]
+async def get_currency_list_handler(
+    response: Response,
+    eapi_service: ExternalAPIService = Depends(get_external_api_service),
+):
+    result = await eapi_service.get_currency_list()
+    return result
 
 
 @router.get("/list_currency", description="Get curencise from currency_list.json")

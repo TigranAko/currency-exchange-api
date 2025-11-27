@@ -10,8 +10,8 @@ class SCurrency(BaseModel):
     @field_validator("currency_from", "currency_to")
     @classmethod
     def validate_currency(cls, v):
-        from app.utils.external_api import get_currencies_from_json
         # когда импорт вверху происходит циклический импорт
+        from app.services.external_api_service import get_currencies_from_json
 
         currencies = get_currencies_from_json().keys()
         if v.upper() not in currencies:

@@ -1,11 +1,22 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
+from httpx import AsyncClient
 
 from app.api.endpoints.currency import router as currency_router
 from app.api.endpoints.users import router as user_router
 from app.core.security import security
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.client = AsyncClient()
+    yield
+    await app.state.client.aclose()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(user_router)
 app.include_router(currency_router)
