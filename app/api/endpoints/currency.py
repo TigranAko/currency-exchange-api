@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, Response
 
 from app.api.schemas.currency import SCurrency
 from app.core.security import security
-from app.services.external_api_service import (
-    ExternalAPIService,
+from app.dependencies.external_api import (
     get_currencies_from_json,
     get_external_api_service,
 )
+from app.services.external_api_service import ExternalAPIService
 
 router = APIRouter(prefix="/currency", tags=["Currency exchange"])
 

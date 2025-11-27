@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 import httpx
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 
 from app.api.schemas.currency import SCurrency
 from app.core.config import ConfigCurrencyExchange
@@ -58,13 +58,3 @@ class ExternalAPIService:
         with open(file_name, "w", encoding="utf-8") as file:
             json.dump(response_json, file, ensure_ascii=False, indent=4)
             # WARNING: нужно проверить содержане данных
-
-
-async def get_external_api_service(request: Request) -> ExternalAPIService:
-    return ExternalAPIService(request.app.state.client)
-
-
-def get_currencies_from_json(file_name="currency_list.json") -> dict[str, str]:
-    with open(file_name, "r", encoding="utf-8") as file:
-        curencies = json.load(file)  # maybe error
-    return curencies

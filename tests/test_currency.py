@@ -5,9 +5,10 @@ from fastapi import HTTPException
 from httpx import Response
 
 from app.api.schemas.currency import SCurrency
+from app.dependencies.external_api import get_currencies_from_json
 
 # from app.utils import external_api as eapi
-from app.services.external_api_service import get_currencies_from_json
+# from app.services.external_api_service import
 
 
 @pytest.mark.parametrize(
