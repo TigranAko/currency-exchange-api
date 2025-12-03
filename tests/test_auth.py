@@ -17,8 +17,11 @@ def test_register(client):
 
 
 def test_login(client):
-    login_data = {"username": "test", "password": "password"}
-    response = client.post("/auth/login", params=login_data)
+    user = {"username": "test", "password": "password"}
+    response = client.post("/auth/register", params=user)
+    assert response.status_code == 200  # 201
+
+    response = client.post("/auth/login", params=user)
     assert response.status_code == 200
     cookies = response.cookies
     assert "access_token_cookie" in cookies
@@ -48,21 +51,3 @@ def test_login_errors(client, creds, status_code):
     cookies = response.cookies
     assert "access_token_cookie" not in cookies
     assert "csrf_access_token" not in cookies
-
-
-def test_register_and_login(client):
-    user = {"username": "user", "password": "pass"}
-    response = client.post("/auth/register", params=user)
-    assert response.status_code == 200
-    data = response.json()
-    assert data == {
-        "ok": True,
-        "message": "Вы зарегестрированы",
-        "data": {"username": "user"},
-    }
-
-    response = client.post("/auth/login", params=user)
-    assert response.status_code == 200
-    cookies = response.cookies
-    assert "access_token_cookie" in cookies
-    assert "csrf_access_token" in cookies

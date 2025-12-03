@@ -3,12 +3,15 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 
+from app.dependencies.database import create_tables, delete_tables
 from app.services.external_api_service import ExternalAPIService
 from main import app
 
 
 @pytest.fixture(scope="session")
 def client():
+    delete_tables()  # FIXME: Удаляется реальная БД
+    create_tables()
     return TestClient(app)
 
 

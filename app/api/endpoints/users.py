@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-# from fastapi.security.http import HTTPBasicCredentials
 from app.api.schemas.user import UserCreds, UserInDB, UserResponse
 from app.core.security import (
     create_cookie_auth,
@@ -10,38 +9,56 @@ from app.core.security import (
     security,
     verify_password_hash,
 )
+from app.dependencies.database import get_session
+from app.repositiries.user_repository import UserRepository
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-u = UserInDB(username="test", hashed_password=create_password_hash("password"))
-
-fake_db: dict[str, str] = {u.username: u.hashed_password}
-print(fake_db)
-
-
 @router.post("/register", response_model=UserResponse)
-async def register(creds: UserCreds = Depends()):
-    # Нужно добавить проверку на существование в БД
+async def register(
+    creds: UserCreds = Depends(),
+    session=Depends(get_session),
+):
+    # TODO: use service
+    urepo = UserRepository(session)
+    if urepo.get_by_name(creds.username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Пользователь с таким именем уже существует",
+        )
+
     password_hash = create_password_hash(creds.password)
-    user = UserInDB(username=creds.username, hashed_password=password_hash)
-    fake_db[user.username] = password_hash
+    creds = creds.model_dump()
+    creds["password"] = password_hash
+    user = urepo.create(creds)
+    print("created user with id", user)
     return {
         "ok": True,
         "message": "Вы зарегестрированы",
         "data": {
             # user.model_dump()
-            "username": creds.username
+            "username": creds["username"]
         },
     }
 
 
 @router.post("/login")
-async def login(response: Response, creds: UserCreds = Depends()):
-    if creds.username not in fake_db or not verify_password_hash(
-        creds.password, fake_db[creds.username]
-    ):
+async def login(
+    response: Response, creds: UserCreds = Depends(), session=Depends(get_session)
+):
+    # TODO: use service
+    urepo = UserRepository(session)
+    user = urepo.get_by_name(creds.username)
+
+    if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
+    user: UserInDB = UserInDB.model_validate(user)
+
+    if not verify_password_hash(creds.password, user.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     access_token = create_jwt_acces_token(creds.username)
     create_cookie_auth(access_token, response)
     return {

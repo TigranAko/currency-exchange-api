@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UserBase(BaseModel):
@@ -9,8 +9,10 @@ class UserCreds(UserBase):
     password: str
 
 
-class UserInDB(UserBase):
-    hashed_password: str
+class UserInDB(UserCreds):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserResponse(BaseModel):
