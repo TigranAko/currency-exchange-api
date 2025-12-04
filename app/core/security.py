@@ -1,5 +1,5 @@
-from authx import AuthX, AuthXConfig, TokenPayload
-from fastapi import Depends, Response
+from authx import AuthX, AuthXConfig
+from fastapi import Response
 from passlib.context import CryptContext
 
 from .config import ConfigAuth
@@ -42,10 +42,6 @@ def create_jwt_acces_token(username: str):
     token = security.create_access_token(uid=username)
     print(token)
     return token
-
-
-def get_username(payload: TokenPayload = Depends(security.access_token_required)):
-    return payload.sub
 
 
 # Нужно добавить refresh tokens

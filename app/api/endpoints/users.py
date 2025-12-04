@@ -1,71 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends
 
-from app.api.schemas.user import UserCreds, UserInDB, UserResponse
-from app.core.security import (
-    create_cookie_auth,
-    create_jwt_acces_token,
-    create_password_hash,
-    get_username,
-    security,
-    verify_password_hash,
-)
-from app.dependencies.database import get_session
-from app.repositiries.user_repository import UserRepository
+from app.api.schemas.user import UserCreds, UserInDB
+from app.core.security import security
+from app.services.user_service import UserService, get_user, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 async def register(
     creds: UserCreds = Depends(),
-    session=Depends(get_session),
+    user_service: UserService = Depends(get_user_service),
 ):
-    # TODO: use service
-    urepo = UserRepository(session)
-    if urepo.get_by_name(creds.username):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Пользователь с таким именем уже существует",
-        )
-
-    password_hash = create_password_hash(creds.password)
-    creds = creds.model_dump()
-    creds["password"] = password_hash
-    user = urepo.create(creds)
-    print("created user with id", user)
-    return {
-        "ok": True,
-        "message": "Вы зарегестрированы",
-        "data": {
-            # user.model_dump()
-            "username": creds["username"]
-        },
-    }
+    return user_service.register(creds=creds)
 
 
 @router.post("/login")
 async def login(
-    response: Response, creds: UserCreds = Depends(), session=Depends(get_session)
+    creds: UserCreds = Depends(),
+    user_service: UserService = Depends(get_user_service),
 ):
-    # TODO: use service
-    urepo = UserRepository(session)
-    user = urepo.get_by_name(creds.username)
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    user: UserInDB = UserInDB.model_validate(user)
-
-    if not verify_password_hash(creds.password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    access_token = create_jwt_acces_token(creds.username)
-    create_cookie_auth(access_token, response)
-    return {
-        "ok": True,
-        "message": "Access token в cookie успешно создан",
-        "data": {"username": creds.username, "access_token": access_token},
-    }
+    return user_service.login(creds=creds)
 
 
 @router.get("/protected", dependencies=[Depends(security.access_token_required)])
@@ -74,17 +29,14 @@ async def protected():
 
 
 @router.get("/me")
-async def me(username=Depends(get_username)):
+async def me(user: UserInDB = Depends(get_user)):
     return {
         "ok": True,
         "message": "Вы зарегестрированный пользователь",
-        "data": {"username": username},
+        "data": {"username": user},
     }
 
 
 @router.get("/logout")
-async def logout(response: Response):
-    response.delete_cookie("access_token_cookie")
-    # Возможно нужно удалять из security
-
-    return {"ok": True, "message": "Вы успешно вышли из системы"}
+async def logout(user_service: UserService = Depends(get_user_service)):
+    return user_service.logout()
