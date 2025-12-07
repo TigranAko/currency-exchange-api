@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import logfire
 import uvicorn
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -23,6 +24,11 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(user_router)
 app.include_router(currency_router)
 security.handle_errors(app)
+
+logfire.configure()
+logfire.instrument_fastapi(app)
+logfire.instrument_sqlalchemy()
+logfire.instrument_httpx()
 
 
 if __name__ == "__main__":
