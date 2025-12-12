@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.dependencies.database import get_session
 from app.models.base import BaseModel
 from app.models.user import User
 from app.services.external_api_service import ExternalAPIService
@@ -21,13 +22,18 @@ Session = sessionmaker(engine, autoflush=False)
 BaseModel.metadata.create_all(engine)
 
 
-# @pytest.fixture(scope="function")
+@pytest.fixture()
 def session_db():
-    session = Session()
-    try:
-        yield session
-    finally:
-        session.close()
+    def get_test_session():
+        session = Session()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    app.dependency_overrides[get_session] = get_test_session
+    yield
+    app.dependency_overrides = {}
 
 
 @pytest.fixture(scope="session")

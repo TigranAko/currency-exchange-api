@@ -1,26 +1,16 @@
 import pytest
 
-from app.dependencies.database import get_session
-from main import app
 
-from .conftest import session_db
-
-# client = TestClient(app)
-
-
-def test_register(client):
-    app.dependency_overrides[get_session] = session_db
+def test_register(client, session_db):
     response = client.post(
         "/auth/register", params={"username": "user", "password": "pass"}
     )
     assert response.status_code == 200
     data = response.json()
     assert data is not None
-    app.dependency_overrides = {}
 
 
-def test_login(client):
-    app.dependency_overrides[get_session] = session_db
+def test_login(client, session_db):
     user = {"username": "test", "password": "password"}
     response = client.post("/auth/register", params=user)
     assert response.status_code == 200  # 201
@@ -30,7 +20,6 @@ def test_login(client):
     cookies = response.cookies
     assert "access_token_cookie" in cookies
     assert "csrf_access_token" in cookies
-    app.dependency_overrides = {}
 
 
 @pytest.mark.parametrize("creds", [{}, {"usenmae": "username"}, {"password": "pass"}])
