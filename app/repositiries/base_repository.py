@@ -21,9 +21,8 @@ class SQLAlchemyRepository:
         return result.all()
 
     def create(self, entity: dict):
-        stmt = insert(self.model).values(**entity)  # .returning(self.model.id)
-        entity_id = self.db.execute(stmt)
-        self.db.flush()
+        stmt = insert(self.model).values(**entity).returning(self.model.id)
+        entity_id = self.db.execute(stmt).scalar_one()
         self.db.commit()
         return entity_id
 
