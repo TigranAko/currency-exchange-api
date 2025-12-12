@@ -2,16 +2,36 @@ import httpx
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.dependencies.database import create_tables, delete_tables
+from app.models.base import BaseModel
+from app.models.user import User
 from app.services.external_api_service import ExternalAPIService
 from main import app
+
+print(User)
+
+url = "sqlite:///:memory:"
+engine = create_engine(
+    url, connect_args={"check_same_thread": False}, poolclass=StaticPool
+)
+Session = sessionmaker(engine, autoflush=False)
+BaseModel.metadata.create_all(engine)
+
+
+# @pytest.fixture(scope="function")
+def session_db():
+    session = Session()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 @pytest.fixture(scope="session")
 def client():
-    delete_tables()  # FIXME: Удаляется реальная БД
-    create_tables()
     return TestClient(app)
 
 

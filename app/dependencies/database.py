@@ -6,8 +6,7 @@ from app.models.user import User
 
 print(User)
 
-# TODO: use env file
-# TODO: other DB fpr tests
+# TODO: use env file for DEV, TEST, PROD DB
 
 url = "sqlite:///test.db"
 
