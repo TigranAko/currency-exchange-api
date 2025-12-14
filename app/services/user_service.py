@@ -2,7 +2,7 @@ from authx import TokenPayload
 from fastapi import Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.schemas.user import UserCreds, UserInDB
+from app.api.schemas.user import UserCreate, UserRead
 from app.core.security import (
     create_cookie_auth,
     create_jwt_acces_token,
@@ -19,7 +19,7 @@ class UserService:
         self.users_repo: UserRepository = users_repository
         self.response: Response = response
 
-    def register(self, creds: UserCreds):
+    def register(self, creds: UserCreate):
         if self.users_repo.get_by_name(creds.username):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,8 +36,8 @@ class UserService:
             "message": "Вы зарегестрированы",
         }
 
-    def login(self, creds: UserCreds):
-        user: UserInDB = self.get_user_from_db(creds.username)
+    def login(self, creds: UserCreate):
+        user: UserRead = self.get_user_from_db(creds.username)
         if not verify_password_hash(creds.password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,14 +56,14 @@ class UserService:
         # TODO: CHECK
         return {"ok": True, "message": "Вы успешно вышли из системы"}
 
-    def get_user_from_db(self, username: str) -> UserInDB:
+    def get_user_from_db(self, username: str) -> UserRead:
         user = self.users_repo.get_by_name(username)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Неверный логин или пароль",
             )
-        user: UserInDB = UserInDB.model_validate(user)
+        user: UserRead = UserRead.model_validate(user)
         return user
 
 
@@ -79,7 +79,7 @@ def get_user_service(
 def get_user(
     payload: TokenPayload = Depends(security.access_token_required),
     user_service: UserService = Depends(get_user_service),
-) -> UserInDB:
+) -> UserRead:
     username: str = payload.sub
-    user: UserInDB = user_service.get_user_from_db(username)
+    user: UserRead = user_service.get_user_from_db(username)
     return user

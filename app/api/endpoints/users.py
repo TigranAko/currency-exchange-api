@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.api.schemas.user import UserCreds, UserInDB
+from app.api.schemas.user import UserCreate, UserRead
 from app.core.security import security
 from app.services.user_service import UserService, get_user, get_user_service
 
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register")
 async def register(
-    creds: UserCreds = Depends(),
+    creds: UserCreate = Depends(),
     user_service: UserService = Depends(get_user_service),
 ):
     return user_service.register(creds=creds)
@@ -17,7 +17,7 @@ async def register(
 
 @router.post("/login")
 async def login(
-    creds: UserCreds = Depends(),
+    creds: UserCreate = Depends(),
     user_service: UserService = Depends(get_user_service),
 ):
     return user_service.login(creds=creds)
@@ -29,7 +29,7 @@ async def protected():
 
 
 @router.get("/me")
-async def me(user: UserInDB = Depends(get_user)):
+async def me(user: UserRead = Depends(get_user)):
     return {
         "ok": True,
         "message": "Вы зарегестрированный пользователь",
