@@ -2,7 +2,7 @@ from authx import TokenPayload
 from fastapi import Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.schemas.user import UserCreate, UserRead
+from app.api.schemas.user import UserCreate, UserRead, UserResponse
 from app.core.security import (
     create_cookie_auth,
     create_jwt_acces_token,
@@ -31,10 +31,7 @@ class UserService:
         creds["password"] = password_hash
         user = self.users_repo.create(creds)
         print("created user with id", user)
-        return {
-            "ok": True,
-            "message": "Вы зарегестрированы",
-        }
+        return UserResponse(username=creds["username"])
 
     def login(self, creds: UserCreate):
         user: UserRead = self.get_user_from_db(creds.username)
@@ -46,10 +43,7 @@ class UserService:
 
         access_token = create_jwt_acces_token(creds.username)
         create_cookie_auth(access_token, self.response)
-        return {
-            "ok": True,
-            "message": "Access token в cookie успешно создан",
-        }
+        return UserResponse(username=creds.username)
 
     def logout(self):
         self.response.delete_cookie("access_token_cookie")

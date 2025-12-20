@@ -1,23 +1,23 @@
 from fastapi import APIRouter, Depends
 
-from app.api.schemas.user import UserCreate, UserRead
+from app.api.schemas.user import UserCreate, UserRead, UserResponse
 from app.core.security import security
 from app.services.user_service import UserService, get_user, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register")
+@router.post("/register", status_code=201, response_model=UserResponse)
 async def register(
-    creds: UserCreate = Depends(),
+    creds: UserCreate,
     user_service: UserService = Depends(get_user_service),
-):
+) -> UserResponse:
     return user_service.register(creds=creds)
 
 
-@router.post("/login")
+@router.post("/login", status_code=201, response_model=UserResponse)
 async def login(
-    creds: UserCreate = Depends(),
+    creds: UserCreate,
     user_service: UserService = Depends(get_user_service),
 ):
     return user_service.login(creds=creds)
@@ -37,6 +37,6 @@ async def me(user: UserRead = Depends(get_user)):
     }
 
 
-@router.get("/logout")
+@router.post("/logout")
 async def logout(user_service: UserService = Depends(get_user_service)):
     return user_service.logout()

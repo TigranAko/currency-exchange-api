@@ -3,20 +3,20 @@ import pytest
 
 def test_register(client, session_db):
     response = client.post(
-        "/auth/register", params={"username": "user", "password": "pass"}
+        "/auth/register", json={"username": "user", "password": "pass"}
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     data = response.json()
     assert data is not None
 
 
 def test_login(client, session_db):
     user = {"username": "test", "password": "password"}
-    response = client.post("/auth/register", params=user)
-    assert response.status_code == 200  # 201
+    response = client.post("/auth/register", json=user)
+    assert response.status_code == 201
 
-    response = client.post("/auth/login", params=user)
-    assert response.status_code == 200
+    response = client.post("/auth/login", json=user)
+    assert response.status_code == 201
     cookies = response.cookies
     assert "access_token_cookie" in cookies
     assert "csrf_access_token" in cookies
@@ -24,7 +24,7 @@ def test_login(client, session_db):
 
 @pytest.mark.parametrize("creds", [{}, {"usenmae": "username"}, {"password": "pass"}])
 def test_register_errors(client, creds):
-    response = client.post("/auth/register", params=creds)
+    response = client.post("/auth/register", json=creds)
     assert response.status_code == 422
 
 
@@ -40,7 +40,7 @@ def test_register_errors(client, creds):
     ],
 )
 def test_login_errors(client, creds, status_code):
-    response = client.post("/auth/login", params=creds)
+    response = client.post("/auth/login", json=creds)
     assert response.status_code == status_code
     cookies = response.cookies
     assert "access_token_cookie" not in cookies

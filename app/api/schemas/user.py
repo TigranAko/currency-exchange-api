@@ -5,6 +5,10 @@ class UserBase(BaseModel):
     username: str
 
 
+class UserResponse(UserBase):
+    pass
+
+
 class UserCreate(UserBase):
     password: str
 
