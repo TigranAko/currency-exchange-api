@@ -22,16 +22,22 @@ Session = sessionmaker(engine, autoflush=False)
 BaseModel.metadata.create_all(engine)
 
 
+def get_test_session():
+    session = Session()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@pytest.fixture()
+def get_session_db():
+    return get_test_session().__next__()
+
+
 @pytest.fixture()
 def session_db():
     # FIXME: create real table, but use test DB
-
-    def get_test_session():
-        session = Session()
-        try:
-            yield session
-        finally:
-            session.close()
 
     app.dependency_overrides[get_session] = get_test_session
     yield

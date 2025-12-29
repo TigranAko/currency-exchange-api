@@ -5,18 +5,18 @@ from app.dependencies.database import BaseModel
 
 
 class SQLAlchemyRepository:
-    model: BaseModel = None
+    model: BaseModel
 
     def __init__(self, session: Session):
         self.db: Session = session
 
     def get_by_id(self, entity_id: int):
-        stmt = select(self.model).where(entity_id=self.model.id)
+        stmt = select(self.model).where(entity_id == self.model.id)
         result = self.db.execute(stmt)
         return result.scalar_one()
 
     def get_all(self):
-        stmt = select(self.model).offset(0).limit(10)
+        stmt = select(self.model).offset(0).limit(10)  # TODO: check offset limit, test
         result = self.db.execute(stmt)
         return result.all()
 
