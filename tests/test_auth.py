@@ -39,7 +39,7 @@ def test_register_errors(client, creds):
         [{"username": "no_username", "password": "no_password"}, 401],
     ],
 )
-def test_login_errors(client, creds, status_code):
+def test_login_errors(client, session_db, creds, status_code):
     response = client.post("/auth/login", json=creds)
     assert response.status_code == status_code
     cookies = response.cookies

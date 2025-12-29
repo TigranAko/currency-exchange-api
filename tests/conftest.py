@@ -24,6 +24,8 @@ BaseModel.metadata.create_all(engine)
 
 @pytest.fixture()
 def session_db():
+    # FIXME: create real table, but use test DB
+
     def get_test_session():
         session = Session()
         try:
