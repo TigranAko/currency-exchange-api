@@ -4,9 +4,7 @@ from passlib.context import CryptContext
 
 from .config import ConfigAuth
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"]  # нужно изменить bcrypt на argon2 (или обновить bcrypt)
-)
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def create_password_hash(password: str) -> str:
