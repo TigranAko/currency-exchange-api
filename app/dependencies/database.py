@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import config_db
 from app.models.base import BaseModel
 from app.models.user import User
 
@@ -8,8 +9,7 @@ print(User)
 
 # TODO: use env file for DEV, TEST, PROD DB
 
-url = "sqlite:///test.db"
-
+url = config_db.DB_URL.get_secret_value()
 engine = create_engine(url=url, echo=True)
 
 Session = sessionmaker(engine, autoflush=False)
