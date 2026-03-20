@@ -14,3 +14,10 @@ class ConfigAuth(ConfigBase):
 
 class ConfigCurrencyExchange(ConfigBase):
     CURRENCY_EXCHANGE_API_KEY: SecretStr
+
+
+class ConfigDB(ConfigBase):
+    DB_URL: SecretStr
+
+
+config_db = ConfigDB()
