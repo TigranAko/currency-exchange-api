@@ -12,7 +12,7 @@ async def register(
     creds: UserCreate,
     user_service: UserService = Depends(get_user_service),
 ) -> UserResponse:
-    return user_service.register(creds=creds)
+    return await user_service.register(creds=creds)
 
 
 @router.post("/login", status_code=201, response_model=UserResponse)
@@ -20,7 +20,7 @@ async def login(
     creds: UserCreate,
     user_service: UserService = Depends(get_user_service),
 ):
-    return user_service.login(creds=creds)
+    return await user_service.login(creds=creds)
 
 
 @router.get("/protected", dependencies=[Depends(security.access_token_required)])
@@ -39,4 +39,4 @@ async def me(user: UserRead = Depends(get_user)):
 
 @router.post("/logout")
 async def logout(user_service: UserService = Depends(get_user_service)):
-    return user_service.logout()
+    return await user_service.logout()

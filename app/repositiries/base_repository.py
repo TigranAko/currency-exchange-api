@@ -10,21 +10,21 @@ class SQLAlchemyRepository:
     def __init__(self, session: Session):
         self.db: Session = session
 
-    def get_by_id(self, entity_id: int):
+    async def get_by_id(self, entity_id: int):
         stmt = select(self.model).where(entity_id == self.model.id)
-        result = self.db.execute(stmt)
+        result = await self.db.execute(stmt)
         return result.scalar_one()
 
-    def get_all(self):
+    async def get_all(self):
         stmt = select(self.model).offset(0).limit(10)  # TODO: check offset limit, test
-        result = self.db.execute(stmt)
+        result = await self.db.execute(stmt)
         return result.all()
 
-    def create(self, entity: dict):
+    async def create(self, entity: dict):
         stmt = insert(self.model).values(**entity).returning(self.model.id)
-        entity_id = self.db.execute(stmt).scalar_one()
-        self.db.commit()
-        return entity_id
+        entity_id = await self.db.execute(stmt)
+        await self.db.commit()
+        return entity_id.scalar_one()
 
 
 # feature: now not used

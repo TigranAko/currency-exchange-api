@@ -13,7 +13,7 @@ from app.dependencies.database import create_tables
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_tables()
+    await create_tables()
     app.state.client = AsyncClient()
     yield
     await app.state.client.aclose()

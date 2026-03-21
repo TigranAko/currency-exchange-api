@@ -1,6 +1,6 @@
 from authx import TokenPayload
 from fastapi import Depends, HTTPException, Response, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.user import UserCreate, UserRead, UserResponse
 from app.core.security import (
@@ -19,8 +19,8 @@ class UserService:
         self.users_repo: UserRepository = users_repository
         self.response: Response = response
 
-    def register(self, creds: UserCreate):
-        if self.users_repo.get_by_name(creds.username):
+    async def register(self, creds: UserCreate):
+        if await self.users_repo.get_by_name(creds.username):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Пользователь с таким именем уже существует",
@@ -29,12 +29,12 @@ class UserService:
         password_hash = create_password_hash(creds.password)
         creds = creds.model_dump()
         creds["password"] = password_hash
-        user = self.users_repo.create(creds)
+        user = await self.users_repo.create(creds)
         print("created user with id", user)
         return UserResponse(username=creds["username"])
 
-    def login(self, creds: UserCreate):
-        user: UserRead = self.get_user_from_db(creds.username)
+    async def login(self, creds: UserCreate):
+        user: UserRead = await self.get_user_from_db(creds.username)
         if not verify_password_hash(creds.password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -45,13 +45,13 @@ class UserService:
         create_cookie_auth(access_token, self.response)
         return UserResponse(username=creds.username)
 
-    def logout(self):
+    async def logout(self):
         self.response.delete_cookie("access_token_cookie")
         # TODO: CHECK
         return {"ok": True, "message": "Вы успешно вышли из системы"}
 
-    def get_user_from_db(self, username: str) -> UserRead:
-        user = self.users_repo.get_by_name(username)
+    async def get_user_from_db(self, username: str) -> UserRead:
+        user = await self.users_repo.get_by_name(username)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -64,16 +64,16 @@ class UserService:
 # TODO: dependencies
 
 
-def get_user_service(
-    response: Response, session: Session = Depends(get_session)
+async def get_user_service(
+    response: Response, session: AsyncSession = Depends(get_session)
 ) -> UserService:
     return UserService(response, UserRepository(session))
 
 
-def get_user(
+async def get_user(
     payload: TokenPayload = Depends(security.access_token_required),
     user_service: UserService = Depends(get_user_service),
 ) -> UserRead:
     username: str = payload.sub
-    user: UserRead = user_service.get_user_from_db(username)
+    user: UserRead = await user_service.get_user_from_db(username)
     return user

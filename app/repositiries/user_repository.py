@@ -8,9 +8,10 @@ from .base_repository import SQLAlchemyRepository
 class UserRepository(SQLAlchemyRepository):
     model = User
 
-    def get_by_name(self, name):
+    async def get_by_name(self, name):
         stmt = select(self.model).where(self.model.username == name)
-        result = self.db.execute(stmt).scalar()
+        answer = await self.db.execute(stmt)
+        result = answer.scalar()
         print(result)
         return result
 

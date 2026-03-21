@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import config_db
 from app.models.base import BaseModel
@@ -10,22 +9,25 @@ print(User)
 # TODO: use env file for DEV, TEST, PROD DB
 
 url = config_db.DB_URL.get_secret_value()
-engine = create_engine(url=url, echo=True)
+engine = create_async_engine(url=url, echo=True)
 
-Session = sessionmaker(engine, autoflush=False)
+SessionFactory = async_sessionmaker(engine, autoflush=False)
 
 
-def create_tables():
-    BaseModel.metadata.create_all(engine)
+async def create_tables():
+    async with engine.connect() as connection:
+        await connection.run_sync(BaseModel.metadata.create_all)
+        await connection.commit()
+        await connection.aclose()
 
 
 def delete_tables():
     BaseModel.metadata.drop_all(engine)
 
 
-def get_session():
-    session = Session()
+async def get_session():
+    session: AsyncSession = SessionFactory()
     try:
         yield session
     finally:
-        session.close()
+        session.aclose()
