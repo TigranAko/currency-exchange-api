@@ -1,10 +1,14 @@
+from pathlib import Path
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+path_to_env = f"{Path().absolute()}/../.env"
 
 
 class ConfigBase(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="./.env", env_file_encoding="utf-8", extra="ignore"
+        env_file=path_to_env, env_file_encoding="utf-8", extra="ignore"
     )
 
 
