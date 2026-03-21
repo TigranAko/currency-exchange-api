@@ -1,7 +1,7 @@
 from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 
-from app.dependencies.database import BaseModel
+from app.models.base import BaseModel
 
 
 class SQLAlchemyRepository:
