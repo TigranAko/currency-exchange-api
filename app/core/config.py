@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-path_to_env = f"{Path().absolute()}/../.env"
+path_to_env = f"{Path().absolute()}/.env"
 
 
 class ConfigBase(BaseSettings):
